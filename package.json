@@ -1,5 +1,5 @@
 {
-  "name": "bootstrapped-userscript",
+  "name": "userscript-canvas-speedgrader",
   "private": true,
   "scripts": {
     "build-webpack-config": "tsc -p tsconfig.webpack.json",
@@ -17,5 +17,8 @@
     "userscripter": "5.0.0",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10"
+  },
+  "devDependencies": {
+    "@types/greasemonkey": "^4.0.7"
   }
 }
