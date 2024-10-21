@@ -115,6 +115,8 @@ export function selectRubricOptions(responseMessage: any): void {
     // Get all the criteria rows
     const criteriaRows = document.querySelectorAll('table > tbody > tr[data-testid="rubric-criterion"]');
 
+    let foundOption = false;
+
     criteriaRows.forEach(tr => {
         // Get the name of the criterion
         const nameElement = tr.querySelector('th > div.description > span');
@@ -132,7 +134,7 @@ export function selectRubricOptions(responseMessage: any): void {
             // Get all the options in this criterion
             const optionElements = tr.querySelectorAll('td > div > span > span > div.rating-tier');
 
-            let foundOption = false;
+            foundOption = false;
 
             for (let i = 0; i < optionElements.length; i++) {
                 const optionEl = optionElements[i];
@@ -153,16 +155,20 @@ export function selectRubricOptions(responseMessage: any): void {
                     // Found the matching option
                     // Now click the button
                     console.log(`Clicking option "${selectedValue}" for criterion "${name}"`);
-                    (pointsEl as HTMLElement).click();
                     foundOption = true;
+                    (pointsEl as HTMLElement).click();
+                    if (foundOption == true) {
+                        console.log(`Option "${selectedValue}" clicked for criterion "${name}"`);
+                    }
                     break;
                     //TODO get rid of break and check to make sure no duplicates
                 }
             }
 
-            if (!foundOption) {
+            if (foundOption == false) {
                 console.warn(`Option "${selectedValue}" not found for criterion "${name}"`);
             }
+            
         } else {
             console.warn(`No selected value for criterion "${name}"`);
         }
