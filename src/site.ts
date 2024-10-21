@@ -2,6 +2,7 @@
 
 import U from "./userscript";
 import { Evaluation } from "./grade_submission";
+import { selectRubricOptions } from "./rubric";
 
 export const NAME = U.sitename;
 export const HOSTNAME = U.hostname;
@@ -34,6 +35,7 @@ export function extractContentFromIframe(): string | null {
 }
   
 export function populateGradeFields(evaluation: Evaluation): void {
+
   const gradeInput = document.querySelector("#grading-box-extended") as HTMLInputElement;
   if (gradeInput) {
     gradeInput.value = evaluation.grade;
@@ -56,14 +58,7 @@ export function populateGradeFields(evaluation: Evaluation): void {
     console.log("Comment iframe not found!");
   }
 
-  const rubricDiv = document.querySelector("div.rubric_breakdown") as HTMLElement;
-  if (rubricDiv) {
-    rubricDiv.innerHTML = evaluation.rubric;
-    console.log("Rubric populated:", evaluation.rubric);
-  } else {
-    console.log("Rubric breakdown section not found!");
-    console.log(evaluation.rubric);
-  }
+  selectRubricOptions(evaluation);
 }
   
   

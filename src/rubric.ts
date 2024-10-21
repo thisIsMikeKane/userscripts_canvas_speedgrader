@@ -104,3 +104,67 @@ export function parseRubricTable(htmlString: string): RubricSchemaWrapper {
 
     return rubricSchemaWrapper;
 }
+
+export function selectRubricOptions(responseMessage: any): void {
+    // Ensure responseMessage and responseMessage.rubric exist
+    if (!responseMessage || !responseMessage.rubric) {
+        console.error('Invalid response message');
+        return;
+    }
+
+    // Get all the criteria rows
+    const criteriaRows = document.querySelectorAll('table > tbody > tr[data-testid="rubric-criterion"]');
+
+    criteriaRows.forEach(tr => {
+        // Get the name of the criterion
+        const nameElement = tr.querySelector('th > div.description > span');
+        const name = nameElement?.textContent?.trim() ?? '';
+
+        // Sanitize the name to use as a property key
+        const propertyName = name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+
+        // Get the selected value from responseMessage.rubric
+        const selectedValue = responseMessage.rubric[propertyName];
+
+        if (selectedValue) {
+            // In the row tr, find the option that matches selectedValue
+
+            // Get all the options in this criterion
+            const optionElements = tr.querySelectorAll('td > div > span > span > div.rating-tier');
+
+            let foundOption = false;
+
+            for (let i = 0; i < optionElements.length; i++) {
+                const optionEl = optionElements[i];
+                // For each option, get the value to compare with selectedValue
+
+                const pointsEl = optionEl.querySelector('div.rating-points > span');
+                const pointsText = pointsEl?.textContent?.trim() ?? '';
+                const pointsMatch = pointsText.match(/([0-9.]+) pts/);
+                const points = pointsMatch ? pointsMatch[1] : '';
+
+                const descriptionEl = optionEl.querySelector('div.rating-description > span');
+                const description = descriptionEl?.textContent?.trim() ?? '';
+
+                // Combine points and description for comparison
+                const optionValue = `${points} points - ${description}`;
+
+                if (optionValue === selectedValue) {
+                    // Found the matching option
+                    // Now click the button
+                    console.log(`Clicking option "${selectedValue}" for criterion "${name}"`);
+                    (pointsEl as HTMLElement).click();
+                    foundOption = true;
+                    break;
+                    //TODO get rid of break and check to make sure no duplicates
+                }
+            }
+
+            if (!foundOption) {
+                console.warn(`Option "${selectedValue}" not found for criterion "${name}"`);
+            }
+        } else {
+            console.warn(`No selected value for criterion "${name}"`);
+        }
+    });
+}
