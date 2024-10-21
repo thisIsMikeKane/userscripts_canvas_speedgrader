@@ -7,14 +7,50 @@ import { selectRubricOptions } from "./rubric";
 export const NAME = U.sitename;
 export const HOSTNAME = U.hostname;
 
-export function triggerSubmit(): void {
+export function triggerRubricSubmit(): void {
   const submitButton = document.querySelector(".save_rubric_button") as HTMLElement;
   if (submitButton) {
     submitButton.click();
-    console.log("Submit button clicked!");
+    console.log("Submit rubric button clicked!");
   } else {
-    console.log("Submit button not found!");
+    console.log("Submit rubric button not found!");
   }
+}
+
+export function triggerCommentSubmit(): void {
+  const submitButton = document.querySelector("#comment_submit_button") as HTMLElement;
+  if (submitButton) {
+    submitButton.click();
+    console.log("Submit comment button clicked!");
+  } else {
+    console.log("Submit comment button not found!");
+  }
+}
+
+export function toggleRubric(): void {
+  const event = new KeyboardEvent("keydown", {
+    key: "r",
+    code: "KeyR",
+    keyCode: 82,
+    charCode: 82,
+    bubbles: true,
+    cancelable: true,
+  });
+  document.dispatchEvent(event);
+  console.log("Rubric toggle key event dispatched!");
+}
+
+export function nextSubmission(): void {
+  const event = new KeyboardEvent("keydown", {
+    key: "j",
+    code: "KeyJ",
+    keyCode: 74,
+    charCode: 74,
+    bubbles: true,
+    cancelable: true,
+  });
+  document.dispatchEvent(event);
+  console.log("Next submission key event dispatched!");
 }
   
 export function extractContentFromIframe(): string | null {
@@ -51,12 +87,36 @@ export function populateGradeFields(evaluation: Evaluation): void {
     if (commentTextarea) {
       commentTextarea.innerHTML = evaluation.comments;
       console.log("Comment populated:", evaluation.comments);
+
+      // Select the textarea within the iframe (assuming it's the only editable field)
+      const textarea = commentIframe?.querySelector("body");
+
+      if (textarea) {
+          // Focus the textarea element, placing the cursor inside it
+          textarea.focus();
+
+          // Create and dispatch a 'Tab' key event
+          const tabKeyEvent = new KeyboardEvent("keydown", {
+              key: "Tab",
+              keyCode: 9,
+              code: "Tab",
+              which: 9,
+              bubbles: true,
+              cancelable: true
+          });
+
+          // Dispatch the event to simulate pressing the Tab key
+          textarea.dispatchEvent(tabKeyEvent);
+      }
+
+      triggerCommentSubmit();
     } else {
       console.log("Comment textarea not found in iframe!");
     }
   } else {
     console.log("Comment iframe not found!");
   }
+  //TODO click submit button
 
   selectRubricOptions(evaluation);
 }

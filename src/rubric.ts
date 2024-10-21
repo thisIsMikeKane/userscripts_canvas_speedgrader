@@ -1,3 +1,5 @@
+import { toggleRubric } from './site';
+
 interface JSONSchema {
     $schema: string;
     type: string;
@@ -106,10 +108,30 @@ export function parseRubricTable(htmlString: string): RubricSchemaWrapper {
 }
 
 export function selectRubricOptions(responseMessage: any): void {
+
     // Ensure responseMessage and responseMessage.rubric exist
     if (!responseMessage || !responseMessage.rubric) {
         console.error('Invalid response message');
         return;
+    }
+
+    const rubricFullDiv = document.querySelector("div#rubric_full");
+    if (rubricFullDiv && (rubricFullDiv as HTMLElement).style.display === "none") {
+        console.log('Rubric is currently hidden, toggling rubric.');
+        toggleRubric();
+    } else {
+        console.log('Rubric is already visible.');
+    }
+
+    const rubricDiv = document.querySelector("div.react-rubric");
+    if (rubricDiv) {
+        const assessingDivs = rubricDiv.querySelectorAll('div.assessing');
+        if (assessingDivs.length > 0) {
+            console.log('There are divs with the class "assessing" within rubricDiv.');
+        } else {
+            console.log('There are no divs with the class "assessing" within rubricDiv.');
+            toggleRubric();
+        }
     }
 
     // Get all the criteria rows
@@ -168,7 +190,7 @@ export function selectRubricOptions(responseMessage: any): void {
             if (foundOption == false) {
                 console.warn(`Option "${selectedValue}" not found for criterion "${name}"`);
             }
-            
+
         } else {
             console.warn(`No selected value for criterion "${name}"`);
         }

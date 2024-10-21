@@ -1,7 +1,6 @@
 import { Operation, operation } from "userscripter/run-time/operations";
 import { ALWAYS } from "userscripter/run-time/environment";
-import { triggerSubmit, extractContentFromIframe } from "./site";
-import { sendToChatGPT } from "./api";
+import { triggerRubricSubmit, toggleRubric } from "./site";
 import { parseRubricTable } from "./rubric";    
 import { gradeSubmission } from "./grade_submission";
 
@@ -13,7 +12,7 @@ const OPERATIONS: ReadonlyArray<Operation<any>> = [
             document.addEventListener("keydown", (event) => {
                 if (event.key.toLowerCase() === "s") {
                     console.debug("Key pressed:", event.key, " Triggering submit button...");
-                    triggerSubmit();
+                    triggerRubricSubmit();
                 }
             });
         },
@@ -38,6 +37,9 @@ const OPERATIONS: ReadonlyArray<Operation<any>> = [
                 if (event.key.toLowerCase() === "j") {
                     console.debug("Key pressed:", event.key, " Extracting rubric table...");
                     const rubricDiv = document.querySelector("div.react-rubric");
+                    if (!rubricDiv) {
+                        toggleRubric();
+                    }
                     if (rubricDiv) {
                         const table = rubricDiv.querySelector("table");
                         if (table) {
@@ -50,6 +52,18 @@ const OPERATIONS: ReadonlyArray<Operation<any>> = [
                     } else {
                         console.log("No rubric div found.");
                     }
+                }
+            });
+        },
+    }),
+    operation({
+        description: "Check for grading status on page load",
+        condition: ALWAYS,
+        action: () => {
+            window.addEventListener("load", () => {
+                const gradingStatusIcon = document.querySelector("span.ui-selectmenu-status>span.speedgrader-selectmenu-icon>i.icon-check");
+                if (!gradingStatusIcon) {
+                    console.log("Please grade this assignment");
                 }
             });
         },
