@@ -1,6 +1,26 @@
 // src/api.ts
 
 import { API_ENDPOINTS, POLL_INTERVAL, MAX_RETRIES } from "./config";
+import { getApiKey, getAssistantId } from "./preferences";
+import { parseEvaluationResponse } from "./grade_submission";
+
+export async function sendToChatGPT(content: string): Promise<void> {
+    const apiKey = await getApiKey();
+    const assistantId = await getAssistantId();
+    if (!apiKey || !assistantId) return;
+  
+    if (!assistantId) return;
+  
+    const threadId = await createThread(apiKey);
+    if (!threadId) return;
+  
+    const messageAdded = await addMessageToThread(apiKey, threadId, content);
+    if (!messageAdded) return;
+  
+    await createRun(apiKey, threadId, assistantId, (responseText) => {
+      parseEvaluationResponse(responseText);
+    });
+  }
 
 // Function to create an assistant using XMLHttpRequest
 export async function createAssistant(apiKey: string): Promise<string | null> {
@@ -232,63 +252,4 @@ async function fetchThreadMessages(apiKey: string, threadId: string): Promise<vo
 
       xhr.send();
   });
-}
-
-// Function to parse evaluation response based on the provided JSON schema
-//TODO - Add types for responseText
-function parseEvaluationResponse(responseText: any) {
-  try {
-      const evaluation = JSON.parse(responseText.value);
-      if (evaluation && typeof evaluation === 'object' && 'grade' in evaluation && 'comment' in evaluation && 'rubric' in evaluation) {
-          console.log('Parsed Evaluation:', evaluation);
-
-          // Assuming you want to automatically populate the grading fields based on the response
-          populateGradeFields(evaluation);
-      } else {
-          console.error('Invalid response format:', responseText);
-      }
-  } catch (error) {
-      console.error('Failed to parse response as JSON:', error);
-  }
-}
-
-// Function to populate the grading fields in SpeedGrader
-//TODO - Add types for evaluation object
-function populateGradeFields(evaluation: any) {
-  // Populate the grade field
-  const gradeInput = document.querySelector('input#grading-box-extended') as HTMLInputElement;
-  if (gradeInput) {
-      (gradeInput).value = evaluation.grade;
-      console.log('Grade populated:', evaluation.grade);
-  } else {
-      console.log('Grade input field not found!');
-  }
-
-  // Populate the comment field
-  const commentIframe = document.querySelector('iframe#comment_rce_textarea_ifr');
-  if (commentIframe) {
-      const commentDocument = (commentIframe as HTMLIFrameElement).contentDocument || (commentIframe as HTMLIFrameElement).contentWindow?.document;
-      if (!commentDocument) {
-          console.log('Comment document not found!');
-          return;
-      }
-      const commentTextarea = commentDocument.querySelector('#tinymce');
-      if (commentTextarea) {
-          commentTextarea.innerHTML = evaluation.comment;
-          console.log('Comment populated:', evaluation.comment);
-      } else {
-          console.log('Comment textarea not found in iframe!');
-      }
-  } else {
-      console.log('Comment iframe not found!');
-  }
-
-  // Optionally, populate a rubric breakdown (if applicable)
-  const rubricDiv = document.querySelector('div.rubric_breakdown');
-  if (rubricDiv) {
-      rubricDiv.innerHTML = evaluation.rubric;
-      console.log('Rubric populated:', evaluation.rubric);
-  } else {
-      console.log('Rubric breakdown section not found!');
-  }
 }

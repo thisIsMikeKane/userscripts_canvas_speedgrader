@@ -30,47 +30,20 @@ export async function getApiKey(): Promise<string | null> {
   return apiKey;
 }
 
-
-export async function sendToChatGPT(content: string): Promise<void> {
-  const apiKey = await getApiKey();
-  if (!apiKey) return;
-
-  // Explicitly type the assistantId as string | null
+export async function getAssistantId(): Promise<string | null> {
   let assistantId: string | null = await GM.getValue("assistant_id", null);
+
   if (!assistantId) {
-    assistantId = await createAssistant(apiKey);
-    if (!assistantId) return;
-    await GM.setValue("assistant_id", assistantId);
-  }
-
-  const threadId = await createThread(apiKey);
-  if (!threadId) return;
-
-  const messageAdded = await addMessageToThread(apiKey, threadId, content);
-  if (!messageAdded) return;
-
-  await createRun(apiKey, threadId, assistantId, (responseText) => {
-    parseEvaluationResponse(responseText);
-  });
-}
-
-
-function parseEvaluationResponse(responseText: string): void {
-  try {
-    const evaluation = JSON.parse(responseText) as Evaluation;
-    if (evaluation && evaluation.grade && evaluation.comment && evaluation.rubric) {
-      console.log("Parsed Evaluation:", evaluation);
-      populateGradeFields(evaluation);
+    assistantId = prompt("Please enter your Assistant ID:") || null;
+    if (assistantId) {
+      await GM.setValue("assistant_id", assistantId);
+      console.log("Assistant ID saved successfully!");
     } else {
-      console.error("Invalid response format:", responseText);
+      console.log("No Assistant ID provided.");
     }
-  } catch (error) {
-    console.error("Failed to parse response as JSON:", error);
   }
+
+  return assistantId;
 }
 
-interface Evaluation {
-  grade: string;
-  comment: string;
-  rubric: string;
-}
+
