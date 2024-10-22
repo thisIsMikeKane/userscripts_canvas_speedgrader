@@ -1,4 +1,9 @@
 // This file cannot contain Webpack-resolved imports (e.g. "~src/foo").
+declare global {
+  interface Window {
+    tinymce: any;
+  }
+}
 
 import U from "./userscript";
 import { Evaluation } from "./grade_submission";
@@ -65,6 +70,21 @@ export function extractContentFromIframe(): string | null {
       return null;
     }
   } else {
+    //TODO check if the contents say 
+    // <div id="this_student_does_not_have_a_submission" style="">
+    //   <h3>
+    //       This student does not have a submission for this assignment
+    //   </h3>
+    // </div>
+    // <div id="this_student_has_a_submission" style="display: none;">
+    //   <h3>
+    //     This student has submitted the assignment
+    //     <span class="subheader">This student's responses are hidden because this assignment is anonymous.</span>
+    //   </h3>
+    // </div>
+    // <div id="iframe_holder" style="display: none;"></div>
+    // <div id="resize_overlay" style="display:none;"></div>
+        
     console.log("Iframe not found!");
     return null;
   }
@@ -72,6 +92,7 @@ export function extractContentFromIframe(): string | null {
   
 export function populateGradeFields(evaluation: Evaluation): void {
 
+  // Populate grade text field
   const gradeInput = document.querySelector("#grading-box-extended") as HTMLInputElement;
   if (gradeInput) {
     gradeInput.value = evaluation.grade;
@@ -80,45 +101,19 @@ export function populateGradeFields(evaluation: Evaluation): void {
     console.log("Grade input field not found!");
   }
 
-  const commentIframe = document.querySelector("#comment_rce_textarea_ifr") as HTMLIFrameElement;
-  if (commentIframe) {
-    const commentDocument = commentIframe.contentDocument || commentIframe.contentWindow?.document;
-    const commentTextarea = commentDocument?.querySelector("#tinymce");
-    if (commentTextarea) {
-      commentTextarea.innerHTML = evaluation.comments;
-      console.log("Comment populated:", evaluation.comments);
-
-      // Select the textarea within the iframe (assuming it's the only editable field)
-      const textarea = commentIframe?.querySelector("body");
-
-      if (textarea) {
-          // Focus the textarea element, placing the cursor inside it
-          textarea.focus();
-
-          // Create and dispatch a 'Tab' key event
-          const tabKeyEvent = new KeyboardEvent("keydown", {
-              key: "Tab",
-              keyCode: 9,
-              code: "Tab",
-              which: 9,
-              bubbles: true,
-              cancelable: true
-          });
-
-          // Dispatch the event to simulate pressing the Tab key
-          textarea.dispatchEvent(tabKeyEvent);
-      }
-
-      triggerCommentSubmit();
-    } else {
-      console.log("Comment textarea not found in iframe!");
-    }
+  // Access TinyMCE from the main window
+  const tinymce = unsafeWindow.tinymce;
+  if (tinymce?.activeEditor) {
+    console.log("TinyMCE active editor found!");
+    tinymce.activeEditor.setContent(evaluation.comments);
   } else {
-    console.log("Comment iframe not found!");
+    console.log("TinyMCE active editor not found!");
   }
-  //TODO click submit button
+  triggerCommentSubmit();
 
+  // Fill out rubric
   selectRubricOptions(evaluation);
+  triggerRubricSubmit();
 }
   
   

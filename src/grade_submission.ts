@@ -20,7 +20,6 @@ export function parseEvaluationResponse(responseText: any): void {
       if (evaluation && evaluation.grade && evaluation.comments && evaluation.rubric) {
         console.log("Parsed Evaluation:", evaluation);
         populateGradeFields(evaluation);
-        triggerRubricSubmit();
 
         // Move to the next submission
         //TODO offer user chance to opt-out

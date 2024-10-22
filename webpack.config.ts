@@ -10,7 +10,8 @@ import * as CONFIG from "./src/config";
 import * as SITE from "./src/site";
 import U from "./src/userscript";
 
-export default createWebpackConfig({
+// Create the Webpack configuration using `createWebpackConfig`
+const baseConfig = createWebpackConfig({
     buildConfig: {
         ...DEFAULT_BUILD_CONFIG({
             rootDir: AppRootPath.path,
@@ -23,3 +24,11 @@ export default createWebpackConfig({
     metadataSchema: DEFAULT_METADATA_SCHEMA,
     env: process.env,
 });
+
+// Manually add the `externals` property to the generated configuration
+export default {
+    ...baseConfig,
+    externals: {
+        tinymce: 'tinymce',
+    },
+};

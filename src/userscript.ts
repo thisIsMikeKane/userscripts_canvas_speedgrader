@@ -8,6 +8,6 @@ export default {
     hostname: "instructure.com",
     sitename: "instructure.com",
     match: ["https://*.instructure.com/courses/*/gradebook/speed_grader*"],
-    grant: ["GM.setValue", "GM.getValue"],
+    grant: ["GM.setValue", "GM.getValue", "unsafeWindow"],
     runAt: "document-idle",
 } as const;
